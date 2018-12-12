@@ -1,92 +1,103 @@
-#include<cstdio>
-#include<iostream>
-#include<vector>
+#include<bits/stdc++.h>
+#define lson(x) x * 2 + 1
+#define rson(x) x * 2 + 2
+
 using namespace std;
 
 typedef long long ll;
-const int N = 300500, mod = (int)1e9 + 9;
-const int K = 276601605, A[2] = {691504013, 308495997};
+const int N = 200500, mod = 998244353;
 
-int n,m;
-ll num[N], psum[N];
-ll dat[2][4 * N];
-ll lazy[2][4 * N];
-ll sig[2][N], sum[2][N];
+int n,q;
+ll mul[4*N], add[4*N], sum[4*N];
+map<int, int> M[N];
 
-void propagate(int i, int x, int l, int r) {
+void push_down(int x, int l, int r) {
     int mid = (l + r) / 2;
 
-    ll coe = lazy[i][x];
-    lazy[i][x*2+1] += coe; lazy[i][x*2+1] %= mod;
-    lazy[i][x*2+2] += coe * sig[i][mid + 1 - l]; lazy[i][x*2+2] %= mod;
-    dat[i][x*2+1] += coe * sum[i][mid - l]; dat[i][x*2+1] %= mod;
-    dat[i][x*2+2] += coe * sig[i][mid + 1 - l] % mod * sum[i][r - (mid + 1)]; dat[i][x*2+2] %= mod;
-    lazy[i][x] = 0;
+    sum[lson(x)] = (sum[lson(x)] * mul[x] + add[x] * (mid - l + 1)) % mod;
+    sum[rson(x)] = (sum[rson(x)] * mul[x] + add[x] * (r - mid)) % mod;
+    mul[lson(x)] = mul[lson(x)] * mul[x] % mod;
+    mul[rson(x)] = mul[rson(x)] * mul[x] % mod;
+    add[lson(x)] = (add[lson(x)] * mul[x] + add[x]) % mod;
+    add[rson(x)] = (add[rson(x)] * mul[x] + add[x]) % mod;
+
+    mul[x] = 1; add[x] = 0;
 }
 
-ll query(int i, int a, int b, int x, int l, int r) {
+ll query(int a, int b, int x, int l, int r) {
     int mid = (l + r) / 2;
     if(r < a || l > b) return 0;
 
-    if(lazy[i][x] > 0 && l < r) {
-        propagate(i, x, l, r);
-    }
+    if(l < r) push_down(x, l, r);
 
-    if(l >= a && r <= b) {
-        return dat[i][x];
-    }
+    if(l >= a && r <= b) return sum[x];
 
-    ll LHS = query(i, a, b, x*2+1, l, mid);
-    ll RHS = query(i, a, b, x*2+2, mid+1, r);
+    ll LHS = query(a, b, lson(x), l, mid);
+    ll RHS = query(a, b, rson(x), mid+1, r);
     return (LHS + RHS) % mod;
 }
 
-void update(int i, int a, int b, int x, int l, int r, ll val) {
+void update(int a, int b, int x, int l, int r, int type) {
     int mid = (l + r) / 2;
     if(r < a || l > b) return ;
 
-    if(lazy[i][x] > 0 && l < r) {
-        propagate(i, x, l, r);
-    }
+    if(l < r) push_down(x, l, r);
 
     if(l >= a && r <= b) {
-        dat[i][x] += sig[i][l - a + 1] * sum[i][r - l] % mod;
-        dat[i][x] %= mod;
-        lazy[i][x] += sig[i][l - a + 1];
-        lazy[i][x] %= mod;
+        if(type == 1){
+            sum[x] = (sum[x] + r - l + 1) % mod;
+            add[x] = (add[x] + 1) % mod;
+        }
+        else{
+            sum[x] = (sum[x] * 2) % mod;
+            mul[x] = (mul[x] * 2) % mod;
+        }
         return ;
     }
 
-    update(i, a, b, x*2+1, l, mid, val);
-    update(i, a, b, x*2+2, mid+1, r, val);
+    update(a, b, lson(x), l, mid, type);
+    update(a, b, rson(x), mid+1, r, type);
 
-    dat[i][x] = (dat[i][x*2+1] + dat[i][x*2+2]) % mod;
+    sum[x] = (sum[lson(x)] + sum[rson(x)]) % mod;
+}
+
+void update(int l, int r, int type){
+    update(l, r, 0, 0, n-1, type);
+}
+
+void upd(int x, int l, int r){
+    auto &mp = M[x];
+    auto it = mp.lower_bound(l);
+
+    int las = l - 1;
+    for(; it != mp.end();){
+        int nl = it -> second, nr = it -> first;
+        if(nl > r) break;
+        it = mp.erase(it);
+        if(nl <= l - 1) mp[l - 1] = nl; if(nr >= r + 1) mp[nr] = r + 1;
+
+        if(las+1 <= nl-1) update(las + 1, nl-1, 1);
+        nr = min(r, nr), nl = max(l, nl);
+        update(nl, nr, 2);
+        las = nr;
+    }
+    if(las+1 <= r)  update(las+1, r, 1);
+    mp[r] = l;
 }
 
 int main() {
-
-    for(int i = 0; i < 2; i++){
-        sum[i][0] = sig[i][0] = 1;
-        for(int j = 1; j < N; j++) sig[i][j] = sig[i][j-1] * A[i] % mod;
-        for(int j = 1; j < N; j++) sum[i][j] = (sum[i][j-1] + sig[i][j]) % mod;
-    }
-    scanf("%d%d", &n, &m);
-    for(int i = 0; i < n; i++) scanf("%I64d", &num[i]);
-    psum[0] = num[0];
-    for(int i = 1; i < n; i++) psum[i] = (psum[i-1] + num[i]) % mod;
-
-    for(int i = 0; i < m; i++){
-        int x, l, r;
-        scanf("%d%d%d", &x, &l, &r);
+    fill(mul, mul+4*N, 1);
+    scanf("%d%d", &n, &q);
+    while(q--){
+        int t, l, r, x;
+        scanf("%d%d%d", &t, &l, &r);
         l--, r--;
-        if(x == 1){
-            for(int j = 0; j < 2; j++) update(j, l, r, 0, 0, n-1, A[j]);
+        if(t == 1){
+            scanf("%d", &x);
+            upd(x, l, r);
         }
         else{
-            ll res = psum[r] - (l == 0 ? 0 : psum[l-1]);
-            for(int j = 0; j < 2; j++) res += (j ? -1 : 1) * K * query(j, l, r, 0, 0, n-1);
-            res = (res % mod + mod) % mod;
-            printf("%d\n", (int)res);
+            printf("%I64d\n", query(l, r, 0, 0, n-1));
         }
     }
 }
