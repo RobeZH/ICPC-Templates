@@ -1,20 +1,23 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+#define lson(x) 2*x+1
+#define rson(x) 2*x+2
+
 typedef long long ll;
-const int MAXN = (1 << 17) + 500;
+const int N = (int)1e5 + 500;
 
 int n,m,t,a,b;
-ll dat[MAXN * 4];
-int num[MAXN];
+ll dat[N * 4];
+int num[N];
 
 void init_dat(int l, int r, int x){
     if(l == r){dat[x] = num[l]; return ;}
 
     int mid = (l + r) / 2;
-    init_dat(l, mid, x*2+1);
-    init_dat(mid+1, r, x*2+2);
-    dat[x] = dat[2*x+1] + dat[2*x+2];
+    init_dat(l, mid, lson(x));
+    init_dat(mid+1, r, rson(x));
+    dat[x] = dat[lson(x)] + dat[rson(x)];
 }
 
 void update(int a, int b, int x, int l, int r, int val){
@@ -24,10 +27,10 @@ void update(int a, int b, int x, int l, int r, int val){
         dat[x] = val;
         return ;
     }
-    update(a, b, x*2+1, l, mid, val);
-    update(a, b, x*2+2, mid+1, r, val);
+    update(a, b, lson(x), l, mid, val);
+    update(a, b, rson(x), mid+1, r, val);
 
-    dat[x] = dat[2*x+1] + dat[2*x+2];
+    dat[x] = dat[lson(x)] + dat[rson(x)];
 }
 
 ll query(int a, int b, int x, int l, int r){
@@ -36,8 +39,8 @@ ll query(int a, int b, int x, int l, int r){
     int mid = (l + r) / 2;
     if(a <= l && r <= b) return dat[x];
 
-    ll LHS = query(a, b, x*2+1, l, mid);
-    ll RHS = query(a, b, x*2+2, mid+1, r);
+    ll LHS = query(a, b, lson(x), l, mid);
+    ll RHS = query(a, b, rson(x), mid+1, r);
 
     return LHS + RHS;
 }
