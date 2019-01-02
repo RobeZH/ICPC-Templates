@@ -7,7 +7,6 @@ const int MAXN = (int)4e5 + 500;
 
 int n;
 int num[N], bit[N];
-P l[N], r[N];
 
 int get(int i){
     int ans = 0;
