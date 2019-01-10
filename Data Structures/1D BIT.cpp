@@ -3,21 +3,21 @@ using namespace std;
 typedef long long ll;
 const int MAXN = (int)4e5 + 500;
 
-//BIT is 1-indexed!!!
+//BIT is 0-indexed!!!
 
 int n;
 int num[N], bit[N];
+ll bit[N];
 
-int get(int i){
-    int ans = 0;
-    while(i){ans += bit[i]; i -= (i&-i);}
-    return ans;
+void add(int x, int val) {
+    for(int i = x; i < n; i |= i + 1) bit[i] += val;
 }
 
-int add(int i, int val){
-    while(i < N){bit[i] += val; i += (i&-i);}
+ll get(int x) {
+    ll res = 0;
+    for(int i = x; i >= 0; i = (i & (i + 1)) - 1)  res += bit[i];
+    return res;
 }
-
 
 int main() {
     fill(bit, bit+MAXN, 0);
