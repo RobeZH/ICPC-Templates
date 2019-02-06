@@ -1,139 +1,88 @@
 #include <bits/stdc++.h>
 using namespace std;
+#define lson(x) x * 2 + 1
+#define rson(x) x * 2 + 2
 
 const int N = 100050, LOG_N = 17;
 
-int n,q;
+int n,m,q;
 vector<int> G[N];
 int chainNo, chainHead[N], chainInd[N], totPos[N], totsize, veridx[N];
 int subsize[N], par[N];
-bool black[N];
-
+int in[N], out[N];
+int parent[LOG_N][N];
 int depth[N];
+int sum[4 * N], add[4 * N];
 
-int min_v(int u, int v){
-    if(u == -1) return v;
-    if(v == -1) return u;
-    return depth[u] < depth[v] ? u : v;
-}
-
-
-int dfs(int v, int p, int d){
-    par[v] = p;
+void dfs(int v, int p, int d){
+    par[v] = parent[0][v] = p;
     subsize[v] = 1;
     depth[v] = d;
-    for(auto nxt : G[v]){
+    for(int &nxt : G[v]){
         if(nxt == p) continue;
-        subsize[v] += dfs(nxt, v, d + 1);
+        dfs(nxt, v, d+1);
+        subsize[v] += subsize[nxt];
+        if(subsize[nxt] > subsize[G[v][0]])
+            swap(nxt, G[v][0]);
     }
-    return subsize[v];
 }
 
-int hld(int v, int p){
+void hld(int v, int p){
     if(chainHead[chainNo] == -1) chainHead[chainNo] = v;
     chainInd[v] = chainNo;
-    totPos[v] = totsize;
+    in[v] = totPos[v] = totsize;
     veridx[totsize++] = v;
 //    v_cost[totsize ++] = cost;
 
-    int idx = -1;
     for(auto nxt : G[v]){
         if(nxt == p) continue;
-        if(idx == -1 || subsize[nxt] > subsize[idx]) idx = nxt;
-    }
-
-    if(idx != -1) hld(idx, v);
-    for(auto nxt : G[v]){
-        if(nxt == p || nxt == idx) continue;
-        chainNo ++;
+        if(nxt != G[v][0]) chainNo ++;
         hld(nxt, v);
     }
-}
-
-int dat[N * 4];
-
-
-void update(int a, int x, int l, int r){
-    if(r < a || a < l) return ;
-    int mid = (l + r) / 2;
-    if(l == r) {
-        if(black[l]){
-            black[l] = false;
-            dat[x] = -1;
-        }
-        else{
-            black[l] = true;
-            dat[x] = veridx[l];
-        }
-        return ;
-    }
-    int c1 = (x<<1) | 1 , c2 = (x << 1) + 2;
-    update(a, c1, l, mid);
-    update(a, c2, mid+1, r);
-
-    dat[x] = min_v(dat[c1], dat[c2]);
-}
-
-int query(int a, int b, int x, int l, int r){
-    if(r < a || b < l) return -1;
-    if(a > b) return -1;
-    int mid = (l + r) / 2;
-    if(a <= l && r <= b) return dat[x];
-
-    int c1 = (x<<1) | 1 , c2 = (x << 1) + 2;
-    int LHS = query(a, b, c1, l, mid);
-    int RHS = query(a, b, c2, mid+1, r);
-
-    return min_v(LHS, RHS);
+    out[v] = totsize;
 }
 
 
-void init_hld(){
+void init_hld(int V){
     chainNo = totsize = 0;
     fill(chainHead, chainHead + n, -1);
     dfs(0, -1, 0);
     hld(0, -1);
-    fill(dat, dat + 4 * N, -1);
+    fill(sum, sum + 4 * n, 0);
+    fill(add, add + 4 * n, 0);
 }
 
-int query_single(int v){
-    int res = -1;
+
+int query(int pos, int x, int l, int r) {
+    int mid = (l + r) / 2;
+
+    if(l == r) return add[x];
+
+    if(pos <= mid) return add[x] + query(pos, lson(x), l, mid);
+    else return add[x] + query(pos, rson(x), mid + 1, r);
+}
+
+void update(int a, int b, int x, int l, int r, int val) {
+    int mid = (l + r) / 2;
+    if(r < a || l > b) return ;
+
+    if(l >= a && r <= b) {
+        add[x] += val;
+        return ;
+    }
+    update(a, b, lson(x), l, mid, val);
+    update(a, b, rson(x), mid+1, r, val);
+}
+
+void update_to_root(int v, int val) {
     while(chainInd[v] != chainInd[0]){
-        int cur = query(totPos[chainHead[chainInd[v]]], totPos[v], 0, 0, n-1);
-        res = min_v(cur, res);
+        update(totPos[chainHead[chainInd[v]]], totPos[v], 0, 0, n-1, val);
         v = par[chainHead[chainInd[v]]];
     }
-    int cur = query(totPos[0], totPos[v], 0, 0, n-1);
-    res = min_v(res, cur);
-    return res;
+    update(totPos[0], totPos[v], 0, 0, n-1, val);
 }
 
+
 int main(){
-    scanf("%d%d", &n, &q);
-    for(int i = 0; i < n; i++) G[i].clear();
-    for(int i = 0; i < n - 1; i++){
-        int a, b;
-        scanf("%d%d", &a, &b);
-        a--, b--;
-        G[a].push_back(b);
-        G[b].push_back(a);
-    }
-    init_hld();
-
-    while(q--){
-        int a, b;
-        scanf("%d%d", &a, &b);
-        if(a == 0){
-            b--;
-            update(totPos[b], 0, 0, n-1);
-        }
-        else{
-            b--;
-            int res = query_single(b);
-            if(res != -1) res ++;
-            printf("%d\n", res);
-        }
-
-    }
-    return 0;
+    init_hld(n);
 }

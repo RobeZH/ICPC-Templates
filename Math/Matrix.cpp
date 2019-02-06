@@ -27,7 +27,7 @@ struct matrix
         for(int i = 0; i < size; i++)
             for(int j = 0; j < size; j++){
                 for(int k = 0; k < size; k++)
-                    C.a[i][j] += a[i][k] * B.a[k][j];
+                    C.a[i][j] += a[i][k] * B.a[k][j] % mod;
                 C.a[i][j] %= mod;
             }
         return C;

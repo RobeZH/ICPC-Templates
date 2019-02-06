@@ -46,18 +46,20 @@ struct hs {
         for(int i = 0; i < 4; i++) val[i] = (val[i] + x * pw[i][pwi]) % mods[i];
     }
 
-    void up_pow(int pwi){
-        for(int i = 0; i < 4; i++) val[i] = (val[i] * pw[i][pwi]) % mods[i];
+    Hash up_pow(int pwi){
+        Hash res;
+        for(int i = 0; i < 4; i++){
+            res.val[i] = (val[i] * pw[i][pwi]) % mods[i];
+        }
+        return res;
     }
 };
-
-hs ssum[N];
 
 int main(){
     getline(cin, s);
     n = s.length();
     for(int t = 0; t < 4; t++){
         pw[t][n] = 1;
-        for(int i = 1; i < N; i++) pw[t][i] = pw[t][i+1] * p % mods[t];
+        for(int i = 1; i < N; i++) pw[t][i] = pw[t][i-1] * p % mods[t];
     }
 }

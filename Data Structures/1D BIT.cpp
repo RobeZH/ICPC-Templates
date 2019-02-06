@@ -7,7 +7,6 @@ const int MAXN = (int)4e5 + 500;
 
 int n;
 int num[N], bit[N];
-ll bit[N];
 
 void add(int x, int val) {
     for(int i = x; i < n; i |= i + 1) bit[i] += val;
