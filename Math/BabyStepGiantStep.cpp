@@ -1,5 +1,5 @@
 // Given g^x=y(mod p),
-// find x in log(p)*sqrt(p)
+// find x in O(log(p)*sqrt(p))
 struct BSGS {
     const static int p = 998244353;
     const static int g = 3;

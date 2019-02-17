@@ -11,9 +11,9 @@ int z[MAXN],cnt[MAXN];
 // Examples:
 // str = "aabaacd"
 // z[] = {x, 1, 0, 2, 1, 0, 0}
-//
-// str = "abababab"
-// z[] = {x, 0, 6, 0, 4, 0, 2, 0}
+
+str = "abababab"
+z[] = {x, 0, 6, 0, 4, 0, 2, 0}
 
 void getZarr(string str)
 {
