@@ -17,6 +17,7 @@ z[] = {x, 0, 6, 0, 4, 0, 2, 0}
 
 void getZarr(string str)
 {
+    memset(z, 0, sizeof(z));
     int n = str.length();
     for(int i = 1, l = 0, r = 0; i < n; ++i){
         if(i <= r)

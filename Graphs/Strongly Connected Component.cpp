@@ -6,11 +6,9 @@ typedef pair<int, int> P;
 typedef long long ll;
 
 int n, m;
-string word[N], a, b;
 vector<int> G[N], rG[N], vs;
 bool used[N];
 int cmp[N];
-vector<int> Gn[N];
 
 void add_edge(int from, int to){
     G[from].push_back(to);
@@ -33,17 +31,6 @@ void rdfs(int v, int k){
     }
 }
 
-P dfsn(int v){
-    if(dp[v].first != -1) return dp[v];
-    cpf(dp[v], valcmp[v]);
-    for(int nxt : Gn[v]){
-        P p = dfsn(nxt);
-        if(p < dp[v]) cpf(dp[v], p);
-    }
-    return dp[v];
-}
-
-
 int scc(){
     memset(used, 0, sizeof(used));
     vs.clear();
@@ -59,14 +46,3 @@ int scc(){
     return k;
 }
 
-
-int main(){
-    ios::sync_with_stdio(false);
-    cin.tie();
-
-    cin >> m;
-    for(int i = 0; i < m; i++){
-        cin >> a >> b;
-        add_edge(a, b);
-    }
-}

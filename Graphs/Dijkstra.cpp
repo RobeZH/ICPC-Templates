@@ -15,7 +15,6 @@ struct edge{
 
 int n,m,k,a,b,y;
 vector<edge> G[N];
-vector<edge> B;
 ll dis[N];
 
 void dijkstra(){
@@ -40,35 +39,3 @@ void dijkstra(){
     }
 }
 
-int main(){
-    ios::sync_with_stdio(false);
-    cin.tie();
-
-
-    fill(Bdis, Bdis+N, INF);
-    int res = 0;
-    cin >> n >> m >> k;
-    for(int i = 0; i < m; i++){
-        cin >> a >> b >> y;
-        a--, b--;
-        G[a].push_back(edge(b, y));
-        G[b].push_back(edge(a, y));
-    }
-    for(int i = 0; i < k; i++){
-        cin >> b >> y;
-        b--;
-        Bdis[b] = min(Bdis[b], (ll)y);
-    }
-    for(int i = 0; i < n; i++){
-        if(Bdis[i] != INF){
-            G[0].push_back(edge(i, (int)Bdis[i]));
-        }
-    }
-    dijkstra();
-
-    for(int i = 0; i < n; i++){
-        if(dis[i] == Bdis[i] && cntin[i] == 0) res++;
-    }
-    cout << k - res << endl;
-
-}
