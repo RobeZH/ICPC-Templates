@@ -8,6 +8,7 @@ int n;
 
 struct SA {
     int n;
+    // ht[i] = lcp(suffix[sa[i]], suffix[sa[i-1]])
     int rk[N], sa[N], ht[N];
 
     void build(string str) {

@@ -1,6 +1,14 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+// Define Hash Function for hash map
+struct HASH{
+    size_t operator()(const P &x)const{
+        return hash<ll>()((x.first)^((x.second)<<32));
+    }
+};
+unordered_map<P, int> ump;
+
 int main(){
 	//random number
 	mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
