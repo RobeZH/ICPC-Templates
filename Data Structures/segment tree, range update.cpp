@@ -5,69 +5,101 @@
 using namespace std;
 
 typedef long long ll;
-const int N = 200500;
-ll INF = (ll)1e18 + 50;
+const int N = (int)1e6 + 50;
+int INF = (int)1e9 + 50;
 
-int n,q;
+int n,m,q;
+int a[N], b[N];
 int num[N];
 
+struct node {
+    int mn, add;
+
+    void add_val(int x) {
+        mn += x;
+        add += x;
+    }
+
+    void merge(node &ls, node &rs) {
+        mn = min(ls.mn, rs.mn);
+    }
+};
+
 struct Tree {
-    ll add[4*N], mn[4*N];
+    node dat[4 * N];
 
     void push_down(int x, int l, int r) {
-        if(add[x] != 0) {
+        if(dat[x].add) {
             if(l < r) {
-                int mid = (l + r) / 2;
-                mn[ls(x)] += add[x];
-                add[ls(x)] += add[x];
-                mn[rs(x)] += add[x];
-                add[rs(x)] += add[x];
+                dat[ls(x)].add_val(dat[x].add);
+                dat[rs(x)].add_val(dat[x].add);
             }
-            add[x] = 0;
+            dat[x].add = 0;
         }
     }
 
     void init(int x = 0, int l = 0, int r = n-1) {
-        if(l == r) {mn[x] = num[l]; add[x] = 0; return ;}
+        if(l == r) {
+            dat[x].mn = num[l];
+            dat[x].add = 0;
+            return ;
+        }
         int mid = (l + r) / 2;
         init(ls(x), l, mid);
         init(rs(x), mid + 1, r);
-        add[x] = 0; mn[x] = min(mn[ls(x)], mn[rs(x)]);
+        dat[x].add = 0;
+        dat[x].merge(dat[ls(x)], dat[rs(x)]);
     }
 
-    ll query(int a, int b, int x = 0, int l = 0, int r = n-1) {
+    node query(int a, int b, int x = 0, int l = 0, int r = N-1) {
         int mid = (l + r) / 2;
-        if(r < a || l > b) return INF;
+        if(r < a || l > b) return {INF, 0};
 
         push_down(x, l, r);
 
-        if(l >= a && r <= b) return mn[x];
+        if(l >= a && r <= b) return dat[x];
 
-        ll LHS = query(a, b, ls(x), l, mid);
-        ll RHS = query(a, b, rs(x), mid+1, r);
-        return min(LHS, RHS);
+        node LHS = query(a, b, ls(x), l, mid);
+        node RHS = query(a, b, rs(x), mid+1, r);
+        node res;
+        res.merge(LHS, RHS);
+        return res;
     }
 
     void update(int a, int b, int x, int l, int r, int delta) {
         int mid = (l + r) / 2;
         if(r < a || l > b) return ;
 
-        if(l < r) push_down(x, l, r);
+        push_down(x, l, r);
 
         if(l >= a && r <= b) {
-            mn[x] += delta;
-            add[x] += delta;
+            dat[x].add_val(delta);
             return ;
         }
 
         update(a, b, ls(x), l, mid, delta);
         update(a, b, rs(x), mid+1, r, delta);
 
-        mn[x] = min(mn[ls(x)], mn[rs(x)]);
+        dat[x].merge(dat[ls(x)], dat[rs(x)]);
     }
 
     void update(int a, int b, int delta) {
-        update(a, b, 0, 0, n-1, delta);
+        update(a, b, 0, 0, N - 1, delta);
+    }
+
+    int find(int x, int l, int r) {
+        if(l == r) return l;
+        int mid = (l + r) / 2;
+        push_down(x, l, r);
+
+        if(dat[rs(x)].mn < 0) return find(rs(x), mid + 1, r);
+        else return find(ls(x), l, mid);
+    }
+
+    int find() {
+        if(dat[0].mn >= 0) return -1;
+        else return find(0, 0, N-1);
     }
 
 } tree;
+
