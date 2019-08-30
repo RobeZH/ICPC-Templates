@@ -4,11 +4,10 @@ using namespace std;
 typedef long long ll;
 typedef pair<int, int> P;
 const int mods[4] = {(int)1e9 + 7, (int)1e9 + 9, (int)1e9 + 21, (int)1e9 + 33};
-const int N = (int)1e6 + 500;
+const int N = (int)2e5 + 50;
 
-int n;
-string s;
-int p = 10;
+string s, t;
+int p = 37;
 ll pw[4][N];
 
 struct hs {
@@ -42,24 +41,25 @@ struct hs {
         return res;
     }
 
-    void add(int x, int pwi){
-        for(int i = 0; i < 4; i++) val[i] = (val[i] + x * pw[i][pwi]) % mods[i];
-    }
-
-    Hash up_pow(int pwi){
-        Hash res;
+    hs operator ^ (const int pwi) const {
+        hs res;
         for(int i = 0; i < 4; i++){
             res.val[i] = (val[i] * pw[i][pwi]) % mods[i];
         }
         return res;
     }
+
+    void add(int x, int pwi){
+        for(int i = 0; i < 4; i++) {
+            val[i] = (val[i] + x * pw[i][pwi]) % mods[i];
+            if(val[i] < 0) val[i] += mods[i];
+        }
+    }
 };
 
-int main(){
-    getline(cin, s);
-    n = s.length();
+int main() {
     for(int t = 0; t < 4; t++){
-        pw[t][n] = 1;
+        pw[t][0] = 1;
         for(int i = 1; i < N; i++) pw[t][i] = pw[t][i-1] * p % mods[t];
     }
 }

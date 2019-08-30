@@ -17,6 +17,7 @@ int main(){
 
     //calculating sum of floor(n/i) in O(sqrt(n))
     for (int i = 1, j = 0; i <= n; i = j + 1)  j = n/(n/i), ans += 1ll*(j-i+1)*(n/i);
+        
 
     //Better hash map
     unordered_map<int, int> mp;

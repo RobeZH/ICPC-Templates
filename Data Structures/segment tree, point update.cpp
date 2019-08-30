@@ -5,44 +5,58 @@ using namespace std;
 #define rson(x) 2*x+2
 
 typedef long long ll;
-const int N = (int)1e5 + 500;
+typedef pair<int, int> P;
+const int N = (int)2e5 + 500, mod = (int)1e9 + 7;
 
-int n,m;
-int num[N];
+int n;
+P p[N];
+int rs[N];
+
+struct node {
+    int mn;
+    int cnt;
+
+    void merge(node &LHS, node &RHS) {
+        mn = min(LHS.mn, RHS.mn);
+        cnt = (LHS.mn == mn ? LHS.cnt : 0) + (RHS.mn == mn ? RHS.cnt : 0);
+        cnt %= mod;
+    }
+};
 
 struct Tree {
-    ll dat[N * 4];
-
-
+    node dat[N * 4];
+    
     void init_dat(int l, int r, int x){
-        if(l == r){dat[x] = num[l]; return ;}
+        if(l == r){dat[x].mn = p[l].first; dat[x].cnt = 1;return ;}
 
         int mid = (l + r) / 2;
         init_dat(l, mid, lson(x));
         init_dat(mid+1, r, rson(x));
-        dat[x] = dat[lson(x)] + dat[rson(x)];
+        dat[x].merge(dat[lson(x)], dat[rson(x)]);
     }
 
-    void update(int pos, int x, int l, int r, int val){
+    void update(int pos, int x, int l, int r, int val, int cnt){
         int mid = (l + r) / 2;
         if(l == r) {
-            dat[x] = val;
+            dat[x].mn = val;
+            dat[x].cnt = cnt;
             return ;
         }
-        if(pos <= mid) update(pos, lson(x), l, mid, val);
-        else update(pos, rson(x), mid+1, r, val);
-        dat[x] = dat[lson(x)] + dat[rson(x)];
+        if(pos <= mid) update(pos, lson(x), l, mid, val, cnt);
+        else update(pos, rson(x), mid+1, r, val, cnt);
+        dat[x].merge(dat[lson(x)], dat[rson(x)]);
     }
 
-    ll query(int a, int b, int x, int l, int r){
-        if(r < a || b < l) return 0;
+    node query(int a, int b, int x, int l, int r){
+        if(r < a || b < l) return {mod + 5, 0};
 
         int mid = (l + r) / 2;
         if(a <= l && r <= b) return dat[x];
 
-        ll LHS = query(a, b, lson(x), l, mid);
-        ll RHS = query(a, b, rson(x), mid+1, r);
-
-        return LHS + RHS;
+        node res;
+        node LHS = query(a, b, lson(x), l, mid);
+        node RHS = query(a, b, rson(x), mid+1, r);
+        res.merge(LHS, RHS);
+        return res;
     }
 } tree;
