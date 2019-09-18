@@ -6,9 +6,12 @@ using namespace std;
 // 998244353     23   3
 // 1004535809    21   3
 // 2281701377    27   3
-const int N = 65570, mod = 786433, g = 10;
-int rev[2*N], w[2][2*N];
-int len;
+
+typedef long long ll;
+typedef pair<int, int> P;
+const int N = (1 << 16) + 50, mod = 998244353, g = 3;
+
+int rev[N], w[2][N];
 
 int pow(int x, int k){
     int c = 1;
@@ -16,8 +19,7 @@ int pow(int x, int k){
     return c;
 }
 
-void init(){
-    len = 65536 * 2;
+void init(int len){
     for(int i = 0; i < len; i++){
         int y = 0, x = i;
         for(int k = 1; k < len; k *= 2, x >>= 1) (y <<= 1) |= (x & 1);
@@ -31,7 +33,8 @@ void init(){
     }
 }
 
-void NTT(int y[], int on){
+void NTT(vector<int> &y, int on, int len){
+    y.resize(len, 0);
     for(int i = 0; i < len; i++) if(i > rev[i]){int tmp = y[i]; y[i] = y[rev[i]], y[rev[i]] = tmp;}
     for(int h = 2; h <= len; h <<= 1) {
         int wi = len / h;
@@ -41,7 +44,7 @@ void NTT(int y[], int on){
                 int u = y[k];
                 int t = int(1LL * w[on==-1][l] * y[k + h / 2] % mod);
                 y[k] = (u + t) % mod;
-                y[k + h / 2] = (u - t + mod) % mod;
+                y[k + h / 2] = ((u - t) % mod + mod) % mod;
                 l += wi;
             }
         }
@@ -53,15 +56,14 @@ void NTT(int y[], int on){
     }
 }
 
-int x1[2*N], x2[2*N];
-
-int main(){
-    init();
-
-    for(int i = 0; i < 5; i++) x1[i] = x2[i] = i;
-    NTT(x1, 1), NTT(x2, 1);
-    for(int i = 0; i < len; i++) x1[i] = 1LL * x1[i] * x2[i] % mod;
-    NTT(x1, -1);
-    for(int i = 0; i < 10; i++) cout << x1[i] << " ";
-
+vector<int> mult_poly(vector<int> a, vector<int> b) {
+    int len = 1;
+    while(len < a.size() + b.size() + 1) len *= 2;
+    init(len);
+    NTT(a, 1, len);
+    NTT(b, 1, len);
+    for(int i = 0; i < len; i++) a[i] = (int)(1LL * a[i] * b[i] % mod);
+    NTT(a, -1, len);
+    while(!a.empty() && a.back() == 0) a.pop_back();
+    return a;
 }
