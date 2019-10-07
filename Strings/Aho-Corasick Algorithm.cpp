@@ -13,6 +13,7 @@ struct Trie{
         end[L++] = 0;
         return L - 1;
     }
+    // Please do initalize it !!!
     void init(){
         L = 0;
         root = newnode();
