@@ -9,6 +9,16 @@ struct HASH{
 };
 unordered_map<P, int> ump;
 
+// multiply numbers up to 1e18
+ll big_mul(ll a, ll b)
+{
+    ll q = (ll)((ld) a * (ld) b / (ld) mod);
+    ll r = a * b - q * mod;
+
+    return (r + mod) % mod;
+}
+
+
 int main(){
 	//random number
 	mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
